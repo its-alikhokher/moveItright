@@ -5,16 +5,14 @@
     <link rel="icon" href="/assets/moveitright/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Asset Relocation System</title>
-    <script type="module" crossorigin src="/assets/moveitright/assets/index-D3xfnv4e.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/moveitright/assets/index-CUA99Rm9.css">
   </head>
   <body>
-    <div id="app"></div>
-    <div id="modals"></div>
-    <div id="popovers"></div>
+    <div id="root"></div>
 
     <script>
       window.csrf_token = '{{ frappe.session.csrf_token }}';
     </script>
+    <script type="module" crossorigin src="/assets/moveitright/assets/index-D3xfnv4e.js"></script>
   </body>
 </html>

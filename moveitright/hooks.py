@@ -5,32 +5,12 @@ app_description = "Assets Movements"
 app_email = "iamaliraza777@gmail.com"
 app_license = "mit"
 
-# Apps
+# Simple website configuration
 # ------------------
-
-# required_apps = []
-
-# Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "moveitright",
-# 		"logo": "/assets/moveitright/logo.png",
-# 		"title": "Moveitright",
-# 		"route": "/moveitright",
-# 		"has_permission": "moveitright.api.permission.has_app_permission"
-# 	}
-# ]
-
-# Includes in <head>
-# ------------------
-
-# include js, css files in header of desk.html
-# app_include_css = "/assets/moveitright/css/moveitright.css"
-# app_include_js = "/assets/moveitright/js/moveitright.js"
 
 # include js, css files in header of web template
-# web_include_css = "/assets/moveitright/css/moveitright.css"
-# web_include_js = "/assets/moveitright/js/moveitright.js"
+web_include_css = "/assets/moveitright/assets/index-CUA99Rm9.css"
+web_include_js = "/assets/moveitright/assets/index-D3xfnv4e.js"
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "moveitright/public/scss/website"
@@ -58,6 +38,12 @@ app_license = "mit"
 
 # application home page (will override Website Settings)
 # home_page = "login"
+
+# Website Routes
+# --------------
+website_route_rules = [
+	{"from_route": "/web", "to_route": "web"},
+]
 
 # website user home page (by Role)
 # role_home_page = {
@@ -241,7 +227,3 @@ app_license = "mit"
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
-
-website_route_rules = [
-    {"from_route": "/web/<path:app_path>", "to_route": "web"},
-]
