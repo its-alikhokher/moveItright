@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import frappeui from 'frappe-ui/vite'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [frappeui(),react()],
   base: './',
   resolve: {
     alias: {
@@ -11,7 +12,9 @@ export default defineConfig({
     }
   },
    build: {
-    outDir: 'dist',
+    outDir: `../${path.basename(path.resolve('..'))}/public/frontend`,
+    emptyOutDir: true,
+    target: 'es2015',
     sourcemap: true
   },
 });

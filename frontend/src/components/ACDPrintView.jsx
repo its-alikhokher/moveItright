@@ -174,7 +174,7 @@ const ACDPrintView = ({ acdData }) => {
       <div className="bg-gray-50 p-6 rounded-lg mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
           <SafeIcon icon={FiIcons.FiEye} className="mr-2" />
-          Asset Condition Assessment
+          Asset Condition Assessment dfd
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
