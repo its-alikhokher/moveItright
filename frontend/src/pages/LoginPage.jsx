@@ -22,56 +22,34 @@ const LoginPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    console.log("Form submitted with data:", formData);
-    
-    e.preventDefault();
-    setError('');
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
 
-    const success = login(formData.email, formData.password);
-    if (!success) {
-      setError('Invalid email or password');
-    }
-  };
+  try {
+    const res = await fetch('/api/method/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // cookies save hongi
+      body: JSON.stringify({
+        usr: formData.email,
+        pwd: formData.password
+      })
+    });
 
-  const demoUsers = [
-    {
-      role: 'System Administrator',
-      email: 'admin@moveitright.com',
-      password: 'admin123',
-      description: 'Full system access and user management'
-    },
-    {
-      role: 'Asset Custodian',
-      email: 'john.smith@company.com',
-      password: 'user123',
-      description: 'Can create relocation requests for assigned locations'
-    },
-    {
-      role: 'Transport Administrator',
-      email: 'transport.admin@company.com',
-      password: 'transport123',
-      description: 'Assigns internal transport or approves external transport'
-    },
-    {
-      role: 'HOD (Finance)',
-      email: 'michael.brown@company.com',
-      password: 'hod123',
-      description: 'First-line approval for department requests'
-    },
-    {
-      role: 'Asset Manager (Furniture)',
-      email: 'sarah.wilson@company.com',
-      password: 'manager123',
-      description: 'Final approval for furniture and office equipment'
-    },
-    {
-      role: 'Asset Manager (IT)',
-      email: 'lisa.chen@company.com',
-      password: 'manager123',
-      description: 'Final approval for IT equipment'
+    const data = await res.json();
+
+    if (!res.ok || data.exc || data.message === "Invalid Login") {
+      setError("Invalid email or password");
+    } else {
+      console.log("Login success", data);
+      window.location.href = "/web";
     }
-  ];
+  } catch (err) {
+    setError("Server error, please try again");
+    console.error(err);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -114,7 +92,7 @@ const LoginPage = () => {
                 <input
                   id="email"
                   name="email"
-                  type="email"
+                  // type="email"
                   autoComplete="email"
                   required
                   value={formData.email}
