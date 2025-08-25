@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run lint && vite build && yarn copy-html-entry",
+    "build": "npm run lint && vite build --base=/assets/moveitright/frontend/ && yarn copy-html-entry",
     "copy-html-entry": "cp ../moveitright/public/frontend/index.html ../moveitright/www/moveitright.html",
     "lint": "eslint .",
     "lint:error": "eslint . --quiet",

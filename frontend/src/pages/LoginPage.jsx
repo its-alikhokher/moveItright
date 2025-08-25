@@ -6,62 +6,65 @@ import SafeIcon from '../common/SafeIcon';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
+  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  
   const [error, setError] = useState('');
   const { user, login } = useAuth();
-
+  
   if (user) {
-    return <Navigate to="/web" replace />;
+    return <Navigate to="/moveitright#/web" replace />;
   }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
 
-  try {
-    const res = await fetch('/api/method/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        usr: formData.email,
-        pwd: formData.password
-      })
-    });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
 
-    const data = await res.json();
+    try {
+      const res = await fetch('/api/method/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          usr: formData.email,
+          pwd: formData.password
+        })
+      });
 
-    if (!res.ok || data.exc || data.message === "Invalid Login") {
-      setError("Invalid email or password");
-    } else {
-      // ✅ Successfully logged in
-      console.log("Login success", data);
+      const data = await res.json();
 
-      // Update AuthContext with user data
-      const userData = {
-        email: formData.email,
-        name: data.full_name || formData.email,
-        role: data.role || 'user'
-      };
+      if (!res.ok || data.exc || data.message === "Invalid Login") {
+        setError("Invalid email or password");
+      } else {
+        // ✅ Successfully logged in
+        console.log("Login success", data);
 
-      // Store user in localStorage for AuthContext
-      localStorage.setItem('user', JSON.stringify(userData));
+        // Update AuthContext with user data
+        const userData = {
+          email: formData.email,
+          name: data.full_name || formData.email,
+          role: data.role || 'system_admin' // default role
+        };
 
-      // Navigate to web page
-      window.location.href = "/web";
+        // Store user in localStorage for AuthContext
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        // Navigate to web page
+        window.location.href = "/moveitright";
+      }
+    } catch (err) {
+      setError("Server error, please try again");
+      console.error(err);
     }
-  } catch (err) {
-    setError("Server error, please try again");
-    console.error(err);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

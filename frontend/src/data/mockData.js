@@ -1067,8 +1067,8 @@ export const users = [
   // MoveItRight Administrator
   {
     id: 1,
-    email: 'admin@moveitright.com',
-    password: 'admin123',
+    email: 'Administrator',
+    password: 'admin',
     name: 'System Administrator',
     role: 'system_admin',
     department: 'IT Administration',

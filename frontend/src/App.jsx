@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -20,17 +20,14 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/web" element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            } />
             <Route path="/acd-sample" element={<ACDSamplePage />} />
             <Route path="/database-setup" element={<DatabaseSetupPage />} />
             <Route path="/" element={<MainPage />} />
-            <Route
-              path="/web"
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              }
-              />
           </Routes>
         </div>
       </Router>
