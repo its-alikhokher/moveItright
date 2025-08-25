@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute = ({ children }) => {
+const MainPage = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -16,7 +16,11 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  return user ? children : <Navigate to="/login" replace />;
+  // If user is authenticated, redirect to web
+  // If not authenticated, redirect to login
+  return user ?
+    <Navigate to="/web" replace /> :
+    <Navigate to="/login" replace />;
 };
 
-export default ProtectedRoute;
+export default MainPage;

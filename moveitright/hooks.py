@@ -42,7 +42,7 @@ web_include_js = "/assets/moveitright/assets/index-D3xfnv4e.js"
 # Website Routes
 # --------------
 website_route_rules = [
-	{"from_route": "/web", "to_route": "web"},
+	{"from_route": "/moveitright", "to_route": "moveitright"},
 ]
 
 # website user home page (by Role)
