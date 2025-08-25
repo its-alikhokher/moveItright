@@ -7,9 +7,15 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ACDSamplePage from './pages/ACDSamplePage';
 import DatabaseSetupPage from './pages/DatabaseSetupPage';
+import { FrappeProvider } from "frappe-react-sdk";
+
 
 function App() {
   return (
+    <FrappeProvider
+    //  url='http://127.0.0.1:8000'
+     >
+    {
     <AuthProvider>
       <Router>
         <div className="App">
@@ -24,11 +30,13 @@ function App() {
                   <DashboardPage />
                 </ProtectedRoute>
               }
-            />
+              />
           </Routes>
         </div>
       </Router>
     </AuthProvider>
+      }
+    </FrappeProvider>
   );
 }
 

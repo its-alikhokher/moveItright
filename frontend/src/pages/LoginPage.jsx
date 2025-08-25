@@ -23,6 +23,8 @@ const LoginPage = () => {
   };
 
   const handleSubmit = (e) => {
+    console.log("Form submitted with data:", formData);
+    
     e.preventDefault();
     setError('');
 
@@ -155,33 +157,6 @@ const LoginPage = () => {
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300" />
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Demo User Accounts</span>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-3 max-h-96 overflow-y-auto">
-              {demoUsers.map((demoUser, index) => (
-                <div key={index} className="bg-gray-50 p-3 rounded-md border">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <p className="font-medium text-gray-900 text-sm">{demoUser.role}</p>
-                      <p className="text-xs text-gray-600">{demoUser.description}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ email: demoUser.email, password: demoUser.password })}
-                      className="text-blue-600 hover:text-blue-800 text-xs font-medium"
-                    >
-                      Use
-                    </button>
-                  </div>
-                  <div className="text-xs text-gray-500 space-y-1">
-                    <p>Email: {demoUser.email}</p>
-                    <p>Password: {demoUser.password}</p>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </motion.div>

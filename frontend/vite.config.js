@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { FrappeProvider } from "frappe-react-sdk";
+// import { FrappeProvider } from "frappe-react-sdk";
 
 export default defineConfig({
-  plugins: [ FrappeProvider(),react()],
+  plugins: [react()],
   base: '/assets/moveitright/frontend/',
   resolve: {
     alias: {
