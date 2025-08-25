@@ -14,15 +14,14 @@ const LoginPage = () => {
   const { user, login } = useAuth();
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/web" replace />;
   }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
   setError('');
 
@@ -42,8 +41,9 @@ const LoginPage = () => {
     if (!res.ok || data.exc || data.message === "Invalid Login") {
       setError("Invalid email or password");
     } else {
+      // ✅ Successfully logged in
       console.log("Login success", data);
-      window.location.href = "/web";
+      window.location.href = "/"; // ya navigate as per app
     }
   } catch (err) {
     setError("Server error, please try again");
@@ -86,7 +86,7 @@ const LoginPage = () => {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+                User Name
               </label>
               <div className="mt-1">
                 <input
