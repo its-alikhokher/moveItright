@@ -22,7 +22,7 @@ function App() {
             <Route path="/acd-sample" element={<ACDSamplePage />} />
             <Route path="/database-setup" element={<DatabaseSetupPage />} />
             <Route
-              path="/"
+              path="/moveitright"
               element={
                 <ProtectedRoute>
                   <DashboardPage />

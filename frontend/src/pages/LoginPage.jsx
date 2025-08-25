@@ -29,7 +29,7 @@ const handleSubmit = async (e) => {
     const res = await fetch('/api/method/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // cookies save hongi
+      credentials: 'include',
       body: JSON.stringify({
         usr: formData.email,
         pwd: formData.password
@@ -43,7 +43,19 @@ const handleSubmit = async (e) => {
     } else {
       // ✅ Successfully logged in
       console.log("Login success", data);
-      window.location.href = "/"; // ya navigate as per app
+
+      // Update AuthContext with user data
+      const userData = {
+        email: formData.email,
+        name: data.full_name || formData.email,
+        role: data.role || 'user'
+      };
+
+      // Store user in localStorage for AuthContext
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      // Navigate to web page
+      window.location.href = "/web";
     }
   } catch (err) {
     setError("Server error, please try again");
