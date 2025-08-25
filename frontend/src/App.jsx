@@ -12,9 +12,7 @@ import { FrappeProvider } from "frappe-react-sdk";
 
 function App() {
   return (
-    <FrappeProvider
-    //  url='http://127.0.0.1:8000'
-     >
+    <FrappeProvider>
     {
     <AuthProvider>
       <Router>
