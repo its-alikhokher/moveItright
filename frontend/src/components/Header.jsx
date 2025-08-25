@@ -28,7 +28,7 @@ const Header = ({ onSidebarToggle }) => {
               <SafeIcon icon={FiIcons.FiUser} className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">{user?.name}FFDFDFDF </p>
+              <p className="text-sm font-medium text-gray-900">{user?.name}</p>
               <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
             </div>
           </div>
