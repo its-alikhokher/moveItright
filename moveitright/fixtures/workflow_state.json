@@ -1,0 +1,128 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 17:42:27.358881",
+  "name": "Request Approved",
+  "style": "",
+  "workflow_state_name": "Request Approved"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 17:42:50.192806",
+  "name": "Delivered",
+  "style": "",
+  "workflow_state_name": "Delivered"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 17:51:32.889195",
+  "name": "Internal Transport",
+  "style": "",
+  "workflow_state_name": "Internal Transport"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 17:52:32.752768",
+  "name": "External Transport",
+  "style": "",
+  "workflow_state_name": "External Transport"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 17:58:54.036304",
+  "name": "HOD Approval",
+  "style": "",
+  "workflow_state_name": "HOD Approval"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-29 10:53:10.161182",
+  "name": "External Transport Required",
+  "style": "",
+  "workflow_state_name": "External Transport Required"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 17:40:44.678885",
+  "name": "Draft",
+  "style": "",
+  "workflow_state_name": "Draft"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 17:41:52.564966",
+  "name": "HOD Rejected",
+  "style": "",
+  "workflow_state_name": "HOD Rejected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 17:42:16.063402",
+  "name": "Asset Manager Rejected",
+  "style": "",
+  "workflow_state_name": "Asset Manager Rejected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 17:42:59.791003",
+  "name": "Closed",
+  "style": "",
+  "workflow_state_name": "Closed"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-29 10:52:07.603448",
+  "name": "HOD Approval Pending",
+  "style": "",
+  "workflow_state_name": "HOD Approval Pending"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 17:41:30.219375",
+  "name": "HOD Approved",
+  "style": "",
+  "workflow_state_name": "HOD Approved"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 17:42:40.443739",
+  "name": "Collected",
+  "style": "",
+  "workflow_state_name": "Collected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 17:41:05.221359",
+  "name": "Awaiting Transport Allocation",
+  "style": "",
+  "workflow_state_name": "Awaiting Transport Allocation"
+ }
+]

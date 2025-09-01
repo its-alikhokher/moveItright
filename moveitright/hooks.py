@@ -21,6 +21,9 @@ web_include_js = "/assets/moveitright/assets/index-D3xfnv4e.js"
 
 # include js in page
 # page_js = {"page" : "public/js/file.js"}
+doctype_js = {
+    "Asset Movement": "public/js/asset_movement_custom.js"
+}
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
@@ -227,3 +230,17 @@ website_route_rules = [
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
+fixtures = [
+    {
+        "doctype": "Workflow",
+        "filters": {
+            "name": ["in", ["Asset Movement Workflow"]]
+        }
+    },
+    {
+        "doctype": "Workflow State"
+    },
+    {
+        "doctype": "Workflow Action"
+    }
+]

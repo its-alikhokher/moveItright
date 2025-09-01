@@ -2,7 +2,6 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import proxyOptions from './proxyOptions';
-// import { FrappeProvider } from "frappe-react-sdk";
 
 export default defineConfig({
   plugins: [react()],
@@ -18,4 +17,7 @@ export default defineConfig({
     target: 'es2015',
     sourcemap: true
   },
-})
+  server: {
+    proxy: proxyOptions,   // ✅ ab proxy enable hai
+  },
+});
