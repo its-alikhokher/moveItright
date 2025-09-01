@@ -1,209 +1,186 @@
-import { testAssetTags } from '../data/assetTagList';
-import { supabase } from '../lib/supabase';
+// Asset Tag Service for Frappe integration
+// This service provides methods to interact with Frappe ERPNext for asset tag management
 
-// Check if Supabase is properly configured
-const isSupabaseConfigured = () => {
-  return supabase.supabaseUrl !== 'https://your-project-id.supabase.co';
+// Frappe API helper function
+const frappeAPI = async (method, endpoint, data = null) => {
+  const config = {
+    method: method,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  if (data) {
+    config.body = JSON.stringify(data);
+  }
+
+  try {
+    const response = await fetch(`/api/method/${endpoint}`, config);
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'API request failed');
+    }
+
+    return { data: result.message, error: null };
+  } catch (error) {
+    console.error(`Frappe API error (${endpoint}):`, error);
+    return { data: null, error: error.message };
+  }
 };
 
 /**
- * Asset Tag Service for testing
- * This service provides methods to interact with the asset tag list
+ * Asset Tag Service for Frappe integration
+ * This service provides methods to interact with asset tags in Frappe ERPNext
  */
 export const assetTagService = {
   /**
-   * Get all asset tags
+   * Get all asset tags from Frappe
    * @returns {Array} List of all asset tags
    */
   async getAllAssetTags() {
-    if (!isSupabaseConfigured()) {
-      return testAssetTags;
-    }
+    const result = await frappeAPI('GET', 'frappe.client.get_list', {
+      doctype: 'Asset',
+      fields: ['name', 'asset_name', 'asset_category', 'location', 'status', 'item_code'],
+      filters: { docstatus: 1 }
+    });
     
-    try {
-      const { data, error } = await supabase
-        .from('asset_tags_ar2024')
-        .select('*')
-        .order('location_id');
-        
-      if (error) {
-        console.error('Error fetching asset tags:', error);
-        return testAssetTags;
-      }
-      
-      return data || testAssetTags;
-    } catch (err) {
-      console.error('Error in getAllAssetTags:', err);
-      return testAssetTags;
-    }
+    return result.data || [];
   },
 
   /**
    * Get asset tags by location
-   * @param {number} locationId - The location ID to filter by
+   * @param {string} location - The location name to filter by
    * @returns {Array} Filtered list of asset tags
    */
-  async getAssetTagsByLocation(locationId) {
-    if (!isSupabaseConfigured()) {
-      return testAssetTags.filter(tag => tag.locationId === locationId);
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from('asset_tags_ar2024')
-        .select('*')
-        .eq('location_id', locationId)
-        .order('tag_id');
-        
-      if (error) {
-        console.error('Error fetching asset tags by location:', error);
-        return testAssetTags.filter(tag => tag.locationId === locationId);
+  async getAssetTagsByLocation(location) {
+    const result = await frappeAPI('GET', 'frappe.client.get_list', {
+      doctype: 'Asset',
+      fields: ['name', 'asset_name', 'asset_category', 'location', 'status', 'item_code'],
+      filters: { 
+        location: location,
+        docstatus: 1 
       }
-      
-      return data || testAssetTags.filter(tag => tag.locationId === locationId);
-    } catch (err) {
-      console.error('Error in getAssetTagsByLocation:', err);
-      return testAssetTags.filter(tag => tag.locationId === locationId);
-    }
+    });
+    
+    return result.data || [];
   },
 
   /**
    * Get asset tags by category
-   * @param {number} categoryId - The category ID to filter by
+   * @param {string} category - The category name to filter by
    * @returns {Array} Filtered list of asset tags
    */
-  async getAssetTagsByCategory(categoryId) {
-    if (!isSupabaseConfigured()) {
-      return testAssetTags.filter(tag => tag.categoryId === categoryId);
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from('asset_tags_ar2024')
-        .select('*')
-        .eq('category_id', categoryId)
-        .order('tag_id');
-        
-      if (error) {
-        console.error('Error fetching asset tags by category:', error);
-        return testAssetTags.filter(tag => tag.categoryId === categoryId);
+  async getAssetTagsByCategory(category) {
+    const result = await frappeAPI('GET', 'frappe.client.get_list', {
+      doctype: 'Asset',
+      fields: ['name', 'asset_name', 'asset_category', 'location', 'status', 'item_code'],
+      filters: { 
+        asset_category: category,
+        docstatus: 1 
       }
-      
-      return data || testAssetTags.filter(tag => tag.categoryId === categoryId);
-    } catch (err) {
-      console.error('Error in getAssetTagsByCategory:', err);
-      return testAssetTags.filter(tag => tag.categoryId === categoryId);
-    }
+    });
+    
+    return result.data || [];
   },
 
   /**
    * Get asset tags by location and category
-   * @param {number} locationId - The location ID to filter by
-   * @param {number} categoryId - The category ID to filter by
+   * @param {string} location - The location name to filter by
+   * @param {string} category - The category name to filter by
    * @returns {Array} Filtered list of asset tags
    */
-  async getAssetTagsByLocationAndCategory(locationId, categoryId) {
-    if (!isSupabaseConfigured()) {
-      return testAssetTags.filter(
-        tag => tag.locationId === locationId && tag.categoryId === categoryId
-      );
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from('asset_tags_ar2024')
-        .select('*')
-        .eq('location_id', locationId)
-        .eq('category_id', categoryId)
-        .order('tag_id');
-        
-      if (error) {
-        console.error('Error fetching asset tags by location and category:', error);
-        return testAssetTags.filter(
-          tag => tag.locationId === locationId && tag.categoryId === categoryId
-        );
+  async getAssetTagsByLocationAndCategory(location, category) {
+    const result = await frappeAPI('GET', 'frappe.client.get_list', {
+      doctype: 'Asset',
+      fields: ['name', 'asset_name', 'asset_category', 'location', 'status', 'item_code'],
+      filters: { 
+        location: location,
+        asset_category: category,
+        docstatus: 1 
       }
-      
-      return data || testAssetTags.filter(
-        tag => tag.locationId === locationId && tag.categoryId === categoryId
-      );
-    } catch (err) {
-      console.error('Error in getAssetTagsByLocationAndCategory:', err);
-      return testAssetTags.filter(
-        tag => tag.locationId === locationId && tag.categoryId === categoryId
-      );
-    }
+    });
+    
+    return result.data || [];
   },
 
   /**
-   * Get asset tag by ID
-   * @param {string} tagId - The asset tag ID to find
-   * @returns {Object|null} The asset tag object or null if not found
+   * Get asset tag by ID/name
+   * @param {string} assetName - The asset name/ID to find
+   * @returns {Object|null} The asset object or null if not found
    */
-  async getAssetTagById(tagId) {
-    if (!isSupabaseConfigured()) {
-      return testAssetTags.find(tag => tag.tagId === tagId) || null;
-    }
+  async getAssetTagById(assetName) {
+    const result = await frappeAPI('GET', 'frappe.client.get', {
+      doctype: 'Asset',
+      name: assetName
+    });
     
-    try {
-      const { data, error } = await supabase
-        .from('asset_tags_ar2024')
-        .select('*')
-        .eq('tag_id', tagId)
-        .single();
-        
-      if (error) {
-        console.error('Error fetching asset tag by ID:', error);
-        return testAssetTags.find(tag => tag.tagId === tagId) || null;
-      }
-      
-      return data || testAssetTags.find(tag => tag.tagId === tagId) || null;
-    } catch (err) {
-      console.error('Error in getAssetTagById:', err);
-      return testAssetTags.find(tag => tag.tagId === tagId) || null;
-    }
+    return result.data || null;
   },
 
   /**
-   * Search asset tags by name or tag ID
+   * Search asset tags by name or asset ID
    * @param {string} query - The search query
    * @returns {Array} Filtered list of asset tags
    */
   async searchAssetTags(query) {
-    const lowerQuery = query.toLowerCase();
+    const result = await frappeAPI('GET', 'frappe.client.get_list', {
+      doctype: 'Asset',
+      fields: ['name', 'asset_name', 'asset_category', 'location', 'status', 'item_code'],
+      filters: { docstatus: 1 },
+      or_filters: [
+        { asset_name: ['like', `%${query}%`] },
+        { name: ['like', `%${query}%`] },
+        { item_code: ['like', `%${query}%`] }
+      ],
+      limit: 20
+    });
     
-    if (!isSupabaseConfigured()) {
-      return testAssetTags.filter(
-        tag => tag.name.toLowerCase().includes(lowerQuery) || 
-               tag.tagId.toLowerCase().includes(lowerQuery)
-      );
-    }
+    return result.data || [];
+  },
+
+  /**
+   * Get asset details with related information
+   * @param {string} assetName - The asset name/ID
+   * @returns {Object|null} Detailed asset information
+   */
+  async getAssetDetails(assetName) {
+    const result = await frappeAPI('GET', 'frappe.client.get', {
+      doctype: 'Asset',
+      name: assetName
+    });
     
-    try {
-      const { data, error } = await supabase
-        .from('asset_tags_ar2024')
-        .select('*')
-        .or(`name.ilike.%${query}%,tag_id.ilike.%${query}%`)
-        .order('tag_id');
-        
-      if (error) {
-        console.error('Error searching asset tags:', error);
-        return testAssetTags.filter(
-          tag => tag.name.toLowerCase().includes(lowerQuery) || 
-                tag.tagId.toLowerCase().includes(lowerQuery)
-        );
-      }
-      
-      return data || testAssetTags.filter(
-        tag => tag.name.toLowerCase().includes(lowerQuery) || 
-              tag.tagId.toLowerCase().includes(lowerQuery)
-      );
-    } catch (err) {
-      console.error('Error in searchAssetTags:', err);
-      return testAssetTags.filter(
-        tag => tag.name.toLowerCase().includes(lowerQuery) || 
-              tag.tagId.toLowerCase().includes(lowerQuery)
-      );
-    }
+    return result.data || null;
+  },
+
+  /**
+   * Check asset availability for relocation
+   * @param {string} assetName - The asset name/ID
+   * @returns {Object} Availability status and details
+   */
+  async checkAssetAvailability(assetName) {
+    // This would call a custom API method that checks if asset is available for relocation
+    const result = await frappeAPI('GET', 'moveitright.api.custom_api.check_asset_availability', {
+      asset: assetName
+    });
+    
+    return result.data || { available: false, reason: 'Unknown error' };
+  },
+
+  /**
+   * Get asset movement history
+   * @param {string} assetName - The asset name/ID
+   * @returns {Array} List of asset movements
+   */
+  async getAssetMovementHistory(assetName) {
+    const result = await frappeAPI('GET', 'frappe.client.get_list', {
+      doctype: 'Asset Movement',
+      fields: ['name', 'from_location', 'to_location', 'expected_date', 'status', 'purpose'],
+      filters: { asset: assetName },
+      order_by: 'creation desc'
+    });
+    
+    return result.data || [];
   }
 };

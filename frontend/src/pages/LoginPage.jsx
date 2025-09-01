@@ -29,36 +29,15 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const res = await fetch('/api/method/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          usr: formData.email,
-          pwd: formData.password
-        })
-      });
+      const result = await login(formData.email, formData.password);
 
-      const data = await res.json();
-
-      if (!res.ok || data.exc || data.message === "Invalid Login") {
-        setError("Invalid email or password");
-      } else {
-        // ✅ Successfully logged in
-        console.log("Login success", data);
-
-        // Update AuthContext with user data
-        const userData = {
-          email: formData.email,
-          name: data.full_name || formData.email,
-          role: data.role || 'system_admin' // default role
-        };
-
-        // Store user in localStorage for AuthContext
-        localStorage.setItem('user', JSON.stringify(userData));
-
+      if (result.success) {
+        // ✅ Successfully logged in through AuthContext
+        console.log("Login success", result.user);
         // Navigate to web page
         window.location.href = "/moveitright";
+      } else {
+        setError(result.error || "Invalid email or password");
       }
     } catch (err) {
       setError("Server error, please try again");

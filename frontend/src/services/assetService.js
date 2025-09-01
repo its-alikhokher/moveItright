@@ -1,568 +1,463 @@
-import { supabase } from '../lib/supabase';
-import { locations, assetCategories, fixedAssets } from '../data/mockData';
-import { testAssetTags } from '../data/assetTagList';
-import { approvedTransporters } from '../data/mockData';
+// Asset Service for Frappe integration
+// This service provides methods to interact with Frappe ERPNext for asset management
 
-// Check if Supabase is properly configured
-const isSupabaseConfigured = () => {
-  return supabase.supabaseUrl !== 'https://your-project-id.supabase.co';
+// Frappe API helper function
+const frappeAPI = async (method, endpoint, data = null) => {
+  const config = {
+    method: method,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  if (data) {
+    config.body = JSON.stringify(data);
+  }
+
+  try {
+    const response = await fetch(`/api/method/${endpoint}`, config);
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'API request failed');
+    }
+
+    return { data: result.message, error: null };
+  } catch (error) {
+    console.error(`Frappe API error (${endpoint}):`, error);
+    return { data: null, error: error.message };
+  }
 };
 
-// Location services
+// Location services using Frappe
 export const locationService = {
-  // Get all locations from Oracle EBS (via Supabase)
+  // Get all locations from Frappe
   async getAllLocations() {
-    if (!isSupabaseConfigured()) {
-      // Return mock data if Supabase not configured
-      return { data: locations, error: null };
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('locations_ar2024')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
-      return { data: data || [], error };
-    } catch (error) {
-      console.error('Error fetching locations:', error);
-      return { data: locations, error: null }; // Fallback to mock data
-    }
+    return await frappeAPI('GET', 'frappe.client.get_list', {
+      doctype: 'Location',
+      fields: ['name', 'location_name', 'is_group'],
+      filters: { disabled: 0 }
+    });
   },
 
-  // Get location by ID
-  async getLocationById(id) {
-    if (!isSupabaseConfigured()) {
-      const location = locations.find(loc => loc.id === parseInt(id));
-      return { data: location, error: null };
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('locations_ar2024')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      return { data, error };
-    } catch (error) {
-      console.error('Error fetching location:', error);
-      const location = locations.find(loc => loc.id === parseInt(id));
-      return { data: location, error: null };
-    }
+  // Get location by name
+  async getLocationByName(name) {
+    return await frappeAPI('GET', 'frappe.client.get', {
+      doctype: 'Location',
+      name: name
+    });
   }
 };
 
-// Asset Category services
+// Asset Category services using Frappe
 export const categoryService = {
-  // Get all asset categories
+  // Get all asset categories from Frappe
   async getAllCategories() {
-    if (!isSupabaseConfigured()) {
-      return { data: assetCategories, error: null };
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('asset_categories_ar2024')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
-      return { data: data || [], error };
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      return { data: assetCategories, error: null };
-    }
+    return await frappeAPI('GET', 'frappe.client.get_list', {
+      doctype: 'Asset Category',
+      fields: ['name', 'asset_category_name', 'enable_cwip_accounting'],
+      filters: { disabled: 0 }
+    });
   },
 
-  // Get category by ID
-  async getCategoryById(id) {
-    if (!isSupabaseConfigured()) {
-      const category = assetCategories.find(cat => cat.id === parseInt(id));
-      return { data: category, error: null };
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('asset_categories_ar2024')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      return { data, error };
-    } catch (error) {
-      console.error('Error fetching category:', error);
-      const category = assetCategories.find(cat => cat.id === parseInt(id));
-      return { data: category, error: null };
-    }
+  // Get category by name
+  async getCategoryByName(name) {
+    return await frappeAPI('GET', 'frappe.client.get', {
+      doctype: 'Asset Category',
+      name: name
+    });
   }
 };
 
-// Transporter services
-export const transporterService = {
-  // Get all transporters
-  async getAllTransporters() {
-    if (!isSupabaseConfigured()) {
-      return { 
-        data: approvedTransporters.map(t => ({
-          id: t.id,
-          name: t.name,
-          contact_person: t.contactPerson,
-          contact_number: t.phone,
-          email: t.email,
-          specializations: t.specializations.join(', ')
-        })), 
-        error: null 
-      };
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('transporters_ar2024')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
-      return { data: data || [], error };
-    } catch (error) {
-      console.error('Error fetching transporters:', error);
-      return { 
-        data: approvedTransporters.map(t => ({
-          id: t.id,
-          name: t.name,
-          contact_person: t.contactPerson,
-          contact_number: t.phone,
-          email: t.email,
-          specializations: t.specializations.join(', ')
-        })), 
-        error: null 
-      };
-    }
-  },
-
-  // Get transporter by ID
-  async getTransporterById(id) {
-    if (!isSupabaseConfigured()) {
-      const transporter = approvedTransporters.find(t => t.id === parseInt(id));
-      if (!transporter) return { data: null, error: "Transporter not found" };
-      
-      return { 
-        data: {
-          id: transporter.id,
-          name: transporter.name,
-          contact_person: transporter.contactPerson,
-          contact_number: transporter.phone,
-          email: transporter.email,
-          specializations: transporter.specializations.join(', ')
-        }, 
-        error: null 
-      };
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('transporters_ar2024')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      return { data, error };
-    } catch (error) {
-      console.error('Error fetching transporter:', error);
-      const transporter = approvedTransporters.find(t => t.id === parseInt(id));
-      if (!transporter) return { data: null, error: "Transporter not found" };
-      
-      return { 
-        data: {
-          id: transporter.id,
-          name: transporter.name,
-          contact_person: transporter.contactPerson,
-          contact_number: transporter.phone,
-          email: transporter.email,
-          specializations: transporter.specializations.join(', ')
-        }, 
-        error: null 
-      };
-    }
-  }
-};
-
-// Fixed Asset services
+// Asset services using Frappe ERPNext
 export const assetService = {
-  // Get assets by location (and optionally by category)
-  async getAssetsByLocation(locationId, categoryId = null) {
-    if (!isSupabaseConfigured()) {
-      let filteredAssets = fixedAssets.filter(asset => asset.locationId === parseInt(locationId));
-      if (categoryId) {
-        filteredAssets = filteredAssets.filter(asset => asset.categoryId === parseInt(categoryId));
-      }
-      return { data: filteredAssets, error: null };
+  // Get assets by location and optionally by category
+  async getAssetsByLocation(location, category = null) {
+    const filters = { 
+      location: location,
+      docstatus: 1 // Only submitted assets
+    };
+
+    if (category) {
+      filters.asset_category = category;
     }
 
-    try {
-      let query = supabase
-        .from('fixed_assets_ar2024')
-        .select(`
-          *,
-          category:asset_categories_ar2024(name,code),
-          location:locations_ar2024(name,code)
-        `)
-        .eq('location_id', locationId)
-        .eq('is_active', true);
-
-      if (categoryId) {
-        query = query.eq('category_id', categoryId);
-      }
-
-      const { data, error } = await query.order('name');
-      return { data: data || [], error };
-    } catch (error) {
-      console.error('Error fetching assets:', error);
-      let filteredAssets = fixedAssets.filter(asset => asset.locationId === parseInt(locationId));
-      if (categoryId) {
-        filteredAssets = filteredAssets.filter(asset => asset.categoryId === parseInt(categoryId));
-      }
-      return { data: filteredAssets, error: null };
-    }
+    return await frappeAPI('GET', 'frappe.client.get_list', {
+      doctype: 'Asset',
+      fields: ['name', 'asset_name', 'asset_category', 'location', 'status', 'item_code'],
+      filters: filters
+    });
   },
 
-  // Get asset by tag number (Oracle EBS lookup)
-  async getAssetByTagNumber(tagNumber) {
-    if (!isSupabaseConfigured()) {
-      // First try to find it in the asset tags list
-      const assetTag = testAssetTags.find(tag => tag.tagId === tagNumber);
-      if (assetTag) {
-        // Create a synthetic asset object based on the tag
-        return {
-          data: {
-            id: parseInt(tagNumber.split('-')[2]),
-            name: assetTag.name,
-            code: tagNumber.split('-')[0] + '-' + tagNumber.split('-')[1],
-            categoryId: assetTag.categoryId,
-            category: assetTag.category,
-            locationId: assetTag.locationId,
-            location: assetTag.location
-          },
-          error: null
-        };
-      }
-
-      // Fallback to fixed assets
-      const asset = fixedAssets.find(
-        asset => `${asset.code}-${asset.id.toString().padStart(4, '0')}` === tagNumber
-      );
-      return { data: asset, error: null };
-    }
-
-    try {
-      // First try to look up in the asset tags table
-      let { data: assetTag, error: tagError } = await supabase
-        .from('asset_tags_ar2024')
-        .select('*')
-        .eq('tag_id', tagNumber)
-        .single();
-
-      if (!tagError && assetTag) {
-        // Create a synthetic asset object based on the tag
-        return {
-          data: {
-            id: parseInt(tagNumber.split('-')[2]),
-            name: assetTag.name,
-            code: tagNumber.split('-')[0] + '-' + tagNumber.split('-')[1],
-            categoryId: assetTag.category_id,
-            category: assetTag.category,
-            locationId: assetTag.location_id,
-            location: assetTag.location
-          },
-          error: null
-        };
-      }
-
-      // If not found in asset_tags_ar2024, try the fixed_assets_ar2024 table
-      const { data, error } = await supabase
-        .from('fixed_assets_ar2024')
-        .select(`
-          *,
-          category:asset_categories_ar2024(name,code),
-          location:locations_ar2024(name,code)
-        `)
-        .eq('tag_number', tagNumber)
-        .eq('is_active', true)
-        .single();
-
-      if (error) {
-        console.error('Error fetching asset by tag:', error);
-        // Fallback to mock data
-        const asset = fixedAssets.find(
-          asset => `${asset.code}-${asset.id.toString().padStart(4, '0')}` === tagNumber
-        );
-        
-        if (!asset) {
-          // As a last resort, check the testAssetTags
-          const assetTag = testAssetTags.find(tag => tag.tagId === tagNumber);
-          if (assetTag) {
-            return {
-              data: {
-                id: parseInt(tagNumber.split('-')[2]),
-                name: assetTag.name,
-                code: tagNumber.split('-')[0] + '-' + tagNumber.split('-')[1],
-                categoryId: assetTag.categoryId,
-                category: assetTag.category,
-                locationId: assetTag.locationId,
-                location: assetTag.location
-              },
-              error: null
-            };
-          }
-        }
-        return { data: asset, error: null };
-      }
-
-      return { data, error };
-    } catch (error) {
-      console.error('Error fetching asset by tag:', error);
-      // Fallback to mock data
-      const assetTag = testAssetTags.find(tag => tag.tagId === tagNumber);
-      if (assetTag) {
-        return {
-          data: {
-            id: parseInt(tagNumber.split('-')[2]),
-            name: assetTag.name,
-            code: tagNumber.split('-')[0] + '-' + tagNumber.split('-')[1],
-            categoryId: assetTag.categoryId,
-            category: assetTag.category,
-            locationId: assetTag.locationId,
-            location: assetTag.location
-          },
-          error: null
-        };
-      }
-      
-      const asset = fixedAssets.find(
-        asset => `${asset.code}-${asset.id.toString().padStart(4, '0')}` === tagNumber
-      );
-      return { data: asset, error: null };
-    }
+  // Get asset by name/ID
+  async getAssetByName(name) {
+    return await frappeAPI('GET', 'frappe.client.get', {
+      doctype: 'Asset',
+      name: name
+    });
   },
 
-  // Get asset by ID
-  async getAssetById(id) {
-    if (!isSupabaseConfigured()) {
-      const asset = fixedAssets.find(asset => asset.id === parseInt(id));
-      return { data: asset, error: null };
+  // Search assets by name or item code
+  async searchAssets(searchTerm, location = null, category = null) {
+    const filters = {
+      docstatus: 1
+    };
+
+    if (location) {
+      filters.location = location;
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('fixed_assets_ar2024')
-        .select(`
-          *,
-          category:asset_categories_ar2024(name,code),
-          location:locations_ar2024(name,code)
-        `)
-        .eq('id', id)
-        .single();
-
-      return { data, error };
-    } catch (error) {
-      console.error('Error fetching asset:', error);
-      const asset = fixedAssets.find(asset => asset.id === parseInt(id));
-      return { data: asset, error: null };
-    }
-  },
-
-  // Search assets by name or code
-  async searchAssets(searchTerm, locationId = null, categoryId = null) {
-    if (!isSupabaseConfigured()) {
-      let filteredAssets = fixedAssets.filter(
-        asset => 
-          asset.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-          asset.code.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      
-      if (locationId) {
-        filteredAssets = filteredAssets.filter(asset => asset.locationId === parseInt(locationId));
-      }
-      
-      if (categoryId) {
-        filteredAssets = filteredAssets.filter(asset => asset.categoryId === parseInt(categoryId));
-      }
-      
-      return { data: filteredAssets, error: null };
+    if (category) {
+      filters.asset_category = category;
     }
 
-    try {
-      let query = supabase
-        .from('fixed_assets_ar2024')
-        .select(`
-          *,
-          category:asset_categories_ar2024(name,code),
-          location:locations_ar2024(name,code)
-        `)
-        .or(`name.ilike.%${searchTerm}%,code.ilike.%${searchTerm}%,tag_number.ilike.%${searchTerm}%`)
-        .eq('is_active', true);
-
-      if (locationId) {
-        query = query.eq('location_id', locationId);
-      }
-      
-      if (categoryId) {
-        query = query.eq('category_id', categoryId);
-      }
-
-      const { data, error } = await query.order('name').limit(10);
-      return { data: data || [], error };
-    } catch (error) {
-      console.error('Error searching assets:', error);
-      let filteredAssets = fixedAssets.filter(
-        asset => 
-          asset.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-          asset.code.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      
-      if (locationId) {
-        filteredAssets = filteredAssets.filter(asset => asset.locationId === parseInt(locationId));
-      }
-      
-      if (categoryId) {
-        filteredAssets = filteredAssets.filter(asset => asset.categoryId === parseInt(categoryId));
-      }
-      
-      return { data: filteredAssets.slice(0, 10), error: null };
-    }
+    return await frappeAPI('POST', 'frappe.client.get_list', {
+      doctype: 'Asset',
+      fields: ['name', 'asset_name', 'asset_category', 'location', 'status', 'item_code'],
+      filters: filters,
+      or_filters: [
+        { asset_name: ['like', `%${searchTerm}%`] },
+        { item_code: ['like', `%${searchTerm}%`] },
+        { name: ['like', `%${searchTerm}%`] }
+      ],
+      limit: 10
+    });
   }
 };
 
-// Relocation Request services
+// Helper function to map Frappe Asset Movement status to frontend workflow status
+const mapFrappeStatusToFrontend = (frappeStatus, workflowState) => {
+  const statusMap = {
+    'Draft': 'Pending HOD Approval',
+    'Submitted': 'Pending Manager Approval', 
+    'Approved': 'Pending Admin Transport',
+    'In Transit': 'In Progress',
+    'Completed': 'Completed',
+    'Cancelled': 'Denied'
+  };
+
+  // If workflow state exists, use it for more specific mapping
+  if (workflowState) {
+    const workflowMap = {
+      'Pending HOD Approval': 'Pending HOD Approval',
+      'Pending Manager Approval': 'Pending Manager Approval',
+      'Pending Admin Transport': 'Pending Admin Transport',
+      'Transport Assigned': 'In Progress',
+      'In Transit': 'In Progress',
+      'Completed': 'Completed',
+      'Rejected': 'Denied'
+    };
+    return workflowMap[workflowState] || statusMap[frappeStatus] || 'Draft';
+  }
+
+  return statusMap[frappeStatus] || 'Draft';
+};
+
+// Helper function to transform Frappe Asset Movement to frontend format
+const transformAssetMovementToFrontend = (movement, index = 0) => {
+  const frontendRequest = {
+    id: index + 1,
+    requestId: movement.name,
+    assetId: movement.asset || 'UNKNOWN',
+    assetName: movement.asset_name || movement.asset || 'Unknown Asset',
+    assetCode: movement.item_code || movement.asset || 'UNK-000',
+    assetCategory: movement.asset_category || 'Unknown',
+    fromLocation: movement.from_location || 'Unknown Location',
+    toLocation: movement.to_location || 'Unknown Location',
+    transportType: 'Internal', // Static value - can be enhanced later
+    transport_vehicle_type: 1, // Static value
+    requestedDate: movement.expected_date || movement.transaction_date,
+    status: mapFrappeStatusToFrontend(movement.status, movement.workflow_state),
+    requestedBy: movement.owner || 'System User',
+    requestedByUserId: 1, // Static value 
+    requestDate: movement.creation,
+    comments: movement.remarks || '',
+    assignedHOD: 'HOD User', // Static value - can be enhanced with workflow assignment
+    assignedHODId: 1, // Static value
+    assignedManager: 'Manager User', // Static value
+    assignedManagerId: 1, // Static value
+    
+    // Transport details with static values for missing fields
+    transportDetails: {
+      isInternal: true,
+      vehicleId: null,
+      vehicleType: 1,
+      registration: null,
+      driver: null,
+      features: [],
+      transporterId: null,
+      transporterName: null,
+      isDispatched: movement.status === 'In Transit' || movement.status === 'Completed'
+    },
+    
+    // Approval status mapped from Frappe workflow
+    approvalStatus: {
+      isApproved: movement.docstatus === 1,
+      approvedBy: movement.modified_by || null,
+      approvedDate: movement.modified || null,
+      comments: movement.remarks || null
+    },
+    
+    // Dispatch status
+    dispatchStatus: {
+      isDispatched: movement.status === 'In Transit' || movement.status === 'Completed',
+      dispatchedBy: movement.status === 'In Transit' ? 'Transport Administrator' : null,
+      dispatchDate: movement.status === 'In Transit' ? movement.modified : null,
+      currentCustodianNotified: movement.status !== 'Draft',
+      newCustodianNotified: movement.status !== 'Draft',
+      estimatedArrival: movement.expected_date || null,
+      completedDate: movement.status === 'Completed' ? movement.modified : null
+    }
+  };
+
+  return frontendRequest;
+};
+
+// Relocation Request services using Frappe Asset Movement Workflow
 export const relocationService = {
-  // Create new relocation request
+  // Create new relocation request using Asset Movement
   async createRequest(requestData) {
-    if (!isSupabaseConfigured()) {
-      // Mock implementation
-      const newRequest = {
-        id: Date.now(),
-        request_id: `REQ-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`,
-        ...requestData,
-        status: 'Pending Approval',
-        request_date: new Date().toISOString()
+    const result = await frappeAPI('POST', 'frappe.client.insert', {
+      doc: {
+        doctype: 'Asset Movement',
+        purpose: 'Transfer',
+        asset: requestData.asset,
+        from_location: requestData.fromLocation,
+        to_location: requestData.toLocation,
+        expected_date: requestData.requestedDate,
+        remarks: requestData.comments || '',
+        transaction_date: new Date().toISOString().split('T')[0]
+      }
+    });
+
+    if (result.data) {
+      // Transform the created movement to frontend format
+      return {
+        data: transformAssetMovementToFrontend(result.data),
+        error: null
       };
-      console.log('Mock request created:', newRequest);
-      return { data: newRequest, error: null };
     }
 
-    try {
-      // Generate request ID
-      const requestId = `REQ-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`;
+    return result;
+  },
+
+  // Get all requests for current user
+  async getUserRequests(user) {
+    const result = await frappeAPI('GET', 'frappe.client.get_list', {
+      doctype: 'Asset Movement',
+      fields: [
+        'name', 'asset', 'from_location', 'to_location', 'expected_date', 
+        'status', 'remarks', 'owner', 'creation', 'modified', 'docstatus',
+        'modified_by', 'transaction_date', 'workflow_state'
+      ],
+      filters: { owner: user },
+      order_by: 'creation desc'
+    });
+
+    if (result.data) {
+      // Transform Frappe Asset Movements to frontend relocation requests format
+      const transformedRequests = result.data.map((movement, index) => 
+        transformAssetMovementToFrontend(movement, index)
+      );
       
-      const { data, error } = await supabase
-        .from('relocation_requests_ar2024')
-        .insert({
-          request_id: requestId,
-          ...requestData
-        })
-        .select()
-        .single();
-
-      return { data, error };
-    } catch (error) {
-      console.error('Error creating request:', error);
-      return { data: null, error };
+      return { data: transformedRequests, error: null };
     }
+
+    return result;
   },
 
-  // Get all requests
+  // Get all requests (for admins/managers)
   async getAllRequests() {
-    if (!isSupabaseConfigured()) {
-      // Return mock data
-      return { data: [], error: null };
+    const result = await frappeAPI('GET', 'frappe.client.get_list', {
+      doctype: 'Asset Movement',
+      fields: [
+        'name', 'asset', 'from_location', 'to_location', 'expected_date', 
+        'status', 'remarks', 'owner', 'creation', 'modified', 'docstatus',
+        'modified_by', 'transaction_date', 'workflow_state'
+      ],
+      order_by: 'creation desc'
+    });
+
+    if (result.data) {
+      // Transform Frappe Asset Movements to frontend relocation requests format
+      const transformedRequests = result.data.map((movement, index) => 
+        transformAssetMovementToFrontend(movement, index)
+      );
+      
+      return { data: transformedRequests, error: null };
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('relocation_requests_ar2024')
-        .select(`
-          *,
-          asset:fixed_assets_ar2024(name,code,tag_number),
-          from_location:from_location_id(name,code),
-          to_location:to_location_id(name,code)
-        `)
-        .order('request_date', { ascending: false });
+    return result;
+  },
 
-      return { data: data || [], error };
-    } catch (error) {
-      console.error('Error fetching requests:', error);
-      return { data: [], error: null };
+  // Update request status using Frappe workflow
+  async updateRequestStatus(requestName, status, updateData = {}) {
+    // Map frontend status to Frappe workflow action
+    const statusActionMap = {
+      'Pending Manager Approval': 'approve_hod',
+      'Pending Admin Transport': 'approve_manager', 
+      'In Progress': 'assign_transport',
+      'Completed': 'complete_movement',
+      'Denied': 'reject'
+    };
+
+    const action = statusActionMap[status];
+    
+    if (action) {
+      // Use workflow action if available
+      return await frappeAPI('POST', `frappe.client.set_workflow_state`, {
+        doctype: 'Asset Movement',
+        name: requestName,
+        workflow_state: status,
+        ...updateData
+      });
+    } else {
+      // Fallback to direct status update
+      return await frappeAPI('PUT', 'frappe.client.set_value', {
+        doctype: 'Asset Movement',
+        name: requestName,
+        fieldname: 'status',
+        value: status,
+        ...updateData
+      });
     }
   },
 
-  // Update request status
-  async updateRequestStatus(requestId, status, updateData = {}) {
-    if (!isSupabaseConfigured()) {
-      console.log('Mock status update:', { requestId, status, updateData });
-      return { data: { id: requestId, status, ...updateData }, error: null };
+  // Submit/approve request
+  async approveRequest(requestName) {
+    return await frappeAPI('POST', 'frappe.client.submit_doc', {
+      doctype: 'Asset Movement',
+      name: requestName
+    });
+  },
+
+  // Reject request
+  async rejectRequest(requestName, reason = '') {
+    return await frappeAPI('POST', 'frappe.client.cancel_doc', {
+      doctype: 'Asset Movement',
+      name: requestName
+    });
+  },
+
+  // Get request details by ID
+  async getRequestById(requestName) {
+    const result = await frappeAPI('GET', 'frappe.client.get', {
+      doctype: 'Asset Movement',
+      name: requestName
+    });
+
+    if (result.data) {
+      return {
+        data: transformAssetMovementToFrontend(result.data),
+        error: null
+      };
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('relocation_requests_ar2024')
-        .update({ 
-          status, 
-          updated_at: new Date().toISOString(),
-          ...updateData 
-        })
-        .eq('id', requestId)
-        .select()
-        .single();
-
-      return { data, error };
-    } catch (error) {
-      console.error('Error updating request status:', error);
-      return { data: null, error };
-    }
+    return result;
   }
 };
 
-// Oracle EBS Integration Service (mock for now)
-export const oracleService = {
-  // Simulate Oracle EBS asset lookup
-  async lookupAssetInOracle(tagNumber, locationId) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    // Use the asset service to find the asset
-    const { data: asset, error } = await assetService.getAssetByTagNumber(tagNumber);
-
-    if (!asset) {
-      return { data: null, error: 'Asset not found in Oracle EBS' };
-    }
-
-    // Verify location matches
-    if (asset.locationId !== parseInt(locationId) && asset.location_id !== parseInt(locationId)) {
-      const { data: assetLocation } = await locationService.getLocationById(asset.locationId || asset.location_id);
-      return { 
-        data: null, 
-        error: `Asset not found at selected location. This asset is located at ${assetLocation?.name}.` 
-      };
-    }
-
-    return { data: asset, error: null };
+// User and role services
+export const userService = {
+  // Get current user details
+  async getCurrentUser() {
+    return await frappeAPI('GET', 'frappe.auth.get_logged_user');
   },
 
-  // Validate asset against category (if provided)
-  async validateAssetCategory(asset, categoryId) {
-    if (!categoryId) return { valid: true, error: null };
+  // Get user permissions
+  async getUserPermissions(user) {
+    return await frappeAPI('GET', 'frappe.core.doctype.user_permission.user_permission.get_user_permissions', {
+      user: user
+    });
+  }
+};
 
-    const assetCategoryId = asset.categoryId || asset.category_id;
-    if (assetCategoryId !== parseInt(categoryId)) {
-      const { data: category } = await categoryService.getCategoryById(categoryId);
-      const assetCategory = asset.category?.name || asset.category;
-      return { 
-        valid: false, 
-        error: `Asset category mismatch. This asset belongs to ${assetCategory} category, not ${category?.name}.` 
-      };
+// Transporter services using Frappe
+export const transporterService = {
+  // Get all transporters/suppliers
+  async getAllTransporters() {
+    return await frappeAPI('GET', 'frappe.client.get_list', {
+      doctype: 'Supplier',
+      fields: ['name', 'supplier_name', 'mobile_no', 'email_id'],
+      filters: { disabled: 0 }
+    });
+  },
+
+  // Get transporter by name
+  async getTransporterById(name) {
+    return await frappeAPI('GET', 'frappe.client.get', {
+      doctype: 'Supplier',
+      name: name
+    });
+  }
+};
+
+// Custom API for MoveItRight specific functions
+export const moveItRightService = {
+  // This would call custom API methods specific to MoveItRight functionality
+  // These methods would be implemented in moveitright/api/custom_api.py
+
+  // Get asset relocation requests with full details (uses relocationService)
+  async getRelocationRequests(filters = {}) {
+    return await relocationService.getAllRequests();
+  },
+
+  // Create asset relocation request with business logic (uses relocationService)
+  async createRelocationRequest(requestData) {
+    return await relocationService.createRequest(requestData);
+  },
+
+  // Approve/reject relocation request
+  async processRelocationRequest(requestId, action, comments = '') {
+    if (action === 'approve') {
+      return await relocationService.approveRequest(requestId);
+    } else if (action === 'reject') {
+      return await relocationService.rejectRequest(requestId, comments);
     }
+    
+    return { data: null, error: 'Invalid action' };
+  },
 
-    return { valid: true, error: null };
+  // Get dashboard data for different user roles
+  async getDashboardData(role) {
+    // This would aggregate data from various sources
+    // For now, return asset movements as the main data
+    const requests = await relocationService.getAllRequests();
+    
+    return {
+      data: {
+        totalRequests: requests.data ? requests.data.length : 0,
+        pendingRequests: requests.data ? requests.data.filter(r => r.status.includes('Pending')).length : 0,
+        completedRequests: requests.data ? requests.data.filter(r => r.status === 'Completed').length : 0,
+        inProgressRequests: requests.data ? requests.data.filter(r => r.status === 'In Progress').length : 0,
+        requests: requests.data || []
+      },
+      error: requests.error
+    };
+  },
+
+  // Get transport options
+  async getTransportOptions() {
+    // Return static transport options - can be enhanced with Frappe data
+    return {
+      data: {
+        vehicleTypes: [
+          { id: 1, name: '1-Ton Pickup', capacity: '1000kg', features: ['Standard Bed'] },
+          { id: 2, name: '2-Ton Truck', capacity: '2000kg', features: ['Enclosed'] },
+          { id: 3, name: '3-Ton Truck', capacity: '3000kg', features: ['Hydraulic Lift'] },
+          { id: 4, name: '5-Ton Truck', capacity: '5000kg', features: ['Tail Lift', 'Side Gate'] }
+        ],
+        transporters: await transporterService.getAllTransporters()
+      },
+      error: null
+    };
+  },
+
+  // Assign transport to request
+  async assignTransport(requestId, transportData) {
+    return await relocationService.updateRequestStatus(requestId, 'In Progress', {
+      transport_details: JSON.stringify(transportData)
+    });
   }
 };

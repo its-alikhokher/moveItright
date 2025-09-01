@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
@@ -9,7 +9,7 @@ import HODApprovalModal from './HODApprovalModal';
 import ManagerApprovalModal from './ManagerApprovalModal';
 import NotificationModal from './NotificationModal';
 import ACDPrintView from './ACDPrintView';
-import { relocationRequests } from '../data/mockData';
+import { relocationService, moveItRightService } from '../services/assetService';
 import { useAuth } from '../context/AuthContext';
 import { 
   getFilteredRequests, 
@@ -32,11 +32,52 @@ const Dashboard = () => {
   const [showAdminTransportForm, setShowAdminTransportForm] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [requests, setRequests] = useState(relocationRequests);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   // Get current user and permissions
   const { user } = useAuth();
   const dashboardConfig = getDashboardConfig(user);
+
+  // Fetch Asset Movements from Frappe
+  useEffect(() => {
+    const fetchRequests = async () => {
+      if (!user) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        let result;
+
+        // Fetch requests based on user role
+        if (user.role === 'system_admin' || user.role === 'transport_admin' ||
+            user.role === 'hod' || user.role === 'asset_manager') {
+          // Admins and managers can see all requests
+          result = await relocationService.getAllRequests();
+        } else {
+          // Regular users see only their requests
+          result = await relocationService.getUserRequests(user.email);
+        }
+
+        if (result.error) {
+          setError(result.error);
+          console.error('Error fetching requests:', result.error);
+        } else {
+          setRequests(result.data || []);
+        }
+      } catch (err) {
+        setError('Failed to fetch requests from server');
+        console.error('Error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, [user]);
+
   const filteredRequestsByRole = getFilteredRequests(requests, user);
 
   const getStatusColor = (status) => {
@@ -305,18 +346,39 @@ const Dashboard = () => {
 
   const handleHODApprove = async (requestId, approvalData) => {
     try {
-      setRequests(prev => prev.map(req => 
-        req.id === requestId ? {
-          ...req,
-          status: 'Pending Manager Approval',
-          approvalStatus: {
-            isApproved: true,
-            hodApprovedBy: user.name,
-            hodApprovedDate: new Date().toISOString(),
-            hodComments: approvalData.comments
-          }
-        } : req
-      ));
+      setLoading(true);
+
+      // Find the request to get the request name
+      const request = requests.find(r => r.id === requestId);
+      if (!request) {
+        throw new Error('Request not found');
+      }
+
+      // Update status in Frappe
+      const result = await relocationService.updateRequestStatus(
+        request.requestId,
+        'Pending Manager Approval',
+        {
+          hod_comments: approvalData.comments,
+          hod_approved_by: user.name,
+          hod_approved_date: new Date().toISOString()
+        }
+      );
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Refresh data
+      const refreshResult = user.role === 'system_admin' || user.role === 'transport_admin' ||
+                            user.role === 'hod' || user.role === 'asset_manager'
+        ? await relocationService.getAllRequests()
+        : await relocationService.getUserRequests(user.email);
+
+      if (!refreshResult.error) {
+        setRequests(refreshResult.data || []);
+      }
+
       setNotification({
         type: 'approved',
         title: 'Request Approved by HOD',
@@ -326,28 +388,58 @@ const Dashboard = () => {
       setShowNotification(true);
     } catch (error) {
       console.error('Error approving request:', error);
+      setNotification({
+        type: 'error',
+        title: 'Approval Failed',
+        message: error.message || 'Failed to approve request. Please try again.',
+        timestamp: new Date().toISOString()
+      });
+      setShowNotification(true);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleManagerApprove = async (requestId, approvalData) => {
     try {
-      setRequests(prev => prev.map(req => 
-        req.id === requestId ? {
-          ...req,
-          status: req.transportType === 'Internal' ? 'Pending Admin Transport' : 'Approved',
-          approvalStatus: {
-            ...req.approvalStatus,
-            isApproved: true,
-            managerApprovedBy: user.name,
-            managerApprovedDate: new Date().toISOString(),
-            managerComments: approvalData.comments
-          }
-        } : req
-      ));
+      setLoading(true);
+
+      const request = requests.find(r => r.id === requestId);
+      if (!request) {
+        throw new Error('Request not found');
+      }
+
+      const newStatus = request.transportType === 'Internal' ? 'Pending Admin Transport' : 'Approved';
+
+      // Update status in Frappe
+      const result = await relocationService.updateRequestStatus(
+        request.requestId,
+        newStatus,
+        {
+          manager_comments: approvalData.comments,
+          manager_approved_by: user.name,
+          manager_approved_date: new Date().toISOString()
+        }
+      );
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Refresh data
+      const refreshResult = user.role === 'system_admin' || user.role === 'transport_admin' ||
+                            user.role === 'hod' || user.role === 'asset_manager'
+        ? await relocationService.getAllRequests()
+        : await relocationService.getUserRequests(user.email);
+
+      if (!refreshResult.error) {
+        setRequests(refreshResult.data || []);
+      }
+
       setNotification({
         type: 'approved',
         title: 'Request Final Approved',
-        message: selectedRequest.transportType === 'Internal' 
+        message: request.transportType === 'Internal'
           ? 'The request has been approved and sent to Transport Admin for vehicle assignment.'
           : 'The request has been fully approved and is ready for execution.',
         timestamp: new Date().toISOString()
@@ -355,6 +447,15 @@ const Dashboard = () => {
       setShowNotification(true);
     } catch (error) {
       console.error('Error final approving request:', error);
+      setNotification({
+        type: 'error',
+        title: 'Final Approval Failed',
+        message: error.message || 'Failed to approve request. Please try again.',
+        timestamp: new Date().toISOString()
+      });
+      setShowNotification(true);
+    } finally {
+      setLoading(false);
     }
   };
 

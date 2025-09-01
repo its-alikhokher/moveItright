@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
-import { locationService, categoryService, oracleService, relocationService, transporterService } from '../services/assetService';
+import { locationService, categoryService, relocationService, transporterService, assetService } from '../services/assetService';
 import { vehicleTypes } from '../data/mockData';
 
 // Asset condition options
@@ -118,11 +118,8 @@ const AssetRelocationForm = ({ isOpen, onClose, onSubmit }) => {
     setAssetDetails(null);
 
     try {
-      // Oracle EBS lookup simulation
-      const { data: asset, error: lookupError } = await oracleService.lookupAssetInOracle(
-        tagId,
-        formData.fromLocation
-      );
+      // Asset lookup using Frappe
+      const { data: asset, error: lookupError } = await assetService.getAssetByName(tagId);
 
       if (lookupError) {
         setError(lookupError);
@@ -130,18 +127,21 @@ const AssetRelocationForm = ({ isOpen, onClose, onSubmit }) => {
       }
 
       if (!asset) {
-        setError('Asset not found in Oracle EBS. Please verify the tag ID.');
+        setError('Asset not found. Please verify the asset name/ID.');
+        return;
+      }
+
+      // Verify location matches
+      if (asset.location !== formData.fromLocation) {
+        setError(`Asset not found at selected location. This asset is located at ${asset.location}.`);
         return;
       }
 
       // Validate category if selected
       if (formData.assetCategory) {
-        const { valid, error: categoryError } = await oracleService.validateAssetCategory(
-          asset,
-          formData.assetCategory
-        );
-        if (!valid) {
-          setError(categoryError);
+        const categoryValid = asset.asset_category === formData.assetCategory;
+        if (!categoryValid) {
+          setError(`Asset category mismatch. This asset belongs to ${asset.asset_category} category, not ${formData.assetCategory}.`);
           return;
         }
       }
