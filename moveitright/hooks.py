@@ -242,5 +242,20 @@ fixtures = [
     },
     {
         "doctype": "Workflow Action"
-    }
+    },
+    {
+    "doctype": "Role",
+        "filters": {
+            "name": ["in", [
+                "Asset Manager (IT/Furniture)",
+                "HOD (Finance)",
+                "Transport Administrator",
+                "Asset Custodian",
+                ]]
+        },
+    },
+    {
+        "doctype": "Custom DocPerm"
+    },
+
 ]

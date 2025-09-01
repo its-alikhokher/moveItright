@@ -93,15 +93,6 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-08-29 10:52:07.603448",
-  "name": "HOD Approval Pending",
-  "style": "",
-  "workflow_state_name": "HOD Approval Pending"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
-  "icon": "",
   "modified": "2025-08-28 17:41:30.219375",
   "name": "HOD Approved",
   "style": "",
@@ -124,5 +115,14 @@
   "name": "Awaiting Transport Allocation",
   "style": "",
   "workflow_state_name": "Awaiting Transport Allocation"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-29 10:52:07.603448",
+  "name": "HOD Approval Pending",
+  "style": "",
+  "workflow_state_name": "HOD Approval Pending"
  }
 ]
